@@ -24,7 +24,6 @@ SQUARE_SIZE = 200
 BOARD_WIDTH = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_HEIGHT = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_LEFT_MARGIN = (WIDTH - BOARD_WIDTH) // 2
-# BOARD_TOP_MARGIN = TITLE_HEIGHT + TITLE_HEIGHT
 BOARD_TOP_MARGIN = TITLE_HEIGHT + (BODY_HEIGHT - BOARD_HEIGHT) // 2
 BOARD_ROWS = 3
 BOARD_COLS = 3
@@ -35,12 +34,6 @@ SPACE = 55
 
 FOOTER_TOP_MARGIN = HEIGHT - FOOTER_HEIGHT
 # RGB
-"""
-  color: rgb(107, 230, 224);
-  color: rgb(162, 107, 230); 
-  color: rgb(230, 106, 112);
-  color: rgb(174, 230, 106);
-"""
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
@@ -99,7 +92,7 @@ def create_button(action=None):
         text_color=WHITE,
         button_color=BUTTON_BG_COLOR,
         button_hover_color=BUTTON_HOVER_BG_COLOR,
-        border_radius=20,
+        border_radius=BUTTON_BORDER_RADIUS,
         action=action,
     )
     return button
@@ -291,12 +284,13 @@ class Board:
             )
             x += SQUARE_SIZE + LINE_WIDTH
 
+        # draw the markers
         for row in range(3):
             for col in range(3):
                 square = self.squares[row][col]
                 square.draw(screen)
 
-    def check_win(self):
+    def check_winner(self):
         board = self
         for row in range(3):
             if (
@@ -399,7 +393,7 @@ async def main():
                     update = True
 
         if update:
-            winner = board.check_win()
+            winner = board.check_winner()
             board.draw(screen)
             draw_title(screen)
             draw_footer(screen, button)
