@@ -7,26 +7,33 @@ os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 1200, 1200
+WIDTH, HEIGHT = 1000, 1000
 TITLE_WIDTH = WIDTH
 TITLE_HEIGHT = 100
 TITLE_FONT_SIZE = 50
 TITLE_COLOR = (255, 255, 255)
+FOOTER_HEIGHT = TITLE_HEIGHT
+BUTTON_HEIGHT = 50
+BUTTON_WIDTH = 200
+BODY_HEIGHT = HEIGHT - TITLE_HEIGHT - FOOTER_HEIGHT
+
 LINE_WIDTH = 10
 LINE_WIDTH_2 = 5
-
 WIN_LINE_WIDTH = 15
 SQUARE_SIZE = 200
 BOARD_WIDTH = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_HEIGHT = 3 * SQUARE_SIZE + 4 * LINE_WIDTH
 BOARD_LEFT_MARGIN = (WIDTH - BOARD_WIDTH) // 2
-BOARD_TOP_MARGIN = TITLE_HEIGHT
+# BOARD_TOP_MARGIN = TITLE_HEIGHT + TITLE_HEIGHT
+BOARD_TOP_MARGIN = TITLE_HEIGHT + (BODY_HEIGHT - BOARD_HEIGHT) // 2
 BOARD_ROWS = 3
 BOARD_COLS = 3
 CIRCLE_RADIUS = 60
 CIRCLE_WIDTH = 15
 CROSS_WIDTH = 25
 SPACE = 55
+
+FOOTER_TOP_MARGIN = HEIGHT - FOOTER_HEIGHT
 # RGB
 """
   color: rgb(107, 230, 224);
@@ -37,8 +44,18 @@ SPACE = 55
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
+GREEN = (0, 255, 0)
+DARK_GREEN = (0, 100, 0)
 BG_COLOR = (107, 230, 224)
-TITLE_COLOR = (162, 107, 230)
+BUTTON_BG_COLOR = pygame.Color(0, 0, 0)
+BUTTON_BG_COLOR.hsla = (177, 71, 50, 1)
+BUTTON_HOVER_BG_COLOR = pygame.Color(0, 0, 0)
+BUTTON_HOVER_BG_COLOR.hsla = (177, 71, 70, 1)
+BUTTON_BORDER_RADIUS = 10
+# TITLE_BG_COLOR = (162, 107, 230)
+TITLE_BG_COLOR = (95, 30, 174)
+FOOTER_BG_COLOR = TITLE_BG_COLOR
+TITLE_COLOR = WHITE
 BOARD_COLOR = (113, 125, 141)
 X_COLOR = (230, 106, 112)
 O_COLOR = (174, 230, 106)
@@ -49,6 +66,9 @@ LINE_COLOR = (255, 255, 255)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
 
+arial_30 = pygame.font.Font("arial.ttf", size=30)
+arial_30_bold = pygame.font.SysFont("arial", 30, bold=True)
+
 
 def create_screen():
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -58,11 +78,41 @@ def create_screen():
 
 
 def draw_title(screen):
-    title_font = pygame.font.Font(None, TITLE_FONT_SIZE)
+    # title_font = pygame.font.Font(None, TITLE_FONT_SIZE)
+    title_font = arial_30_bold
     title_text = title_font.render("TIC TAC TOE", True, TITLE_COLOR)
     title_rect = title_text.get_rect(center=(TITLE_WIDTH // 2, TITLE_HEIGHT // 2))
-    pygame.draw.rect(screen, TITLE_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
+    pygame.draw.rect(screen, TITLE_BG_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
     screen.blit(title_text, title_rect)
+
+
+def create_button(action=None):
+    left = (WIDTH - BUTTON_WIDTH) // 2
+    top = FOOTER_TOP_MARGIN + (FOOTER_HEIGHT - BUTTON_HEIGHT) // 2
+    button = Button(
+        text="Reset Game",
+        left=left,
+        top=top,
+        width=BUTTON_WIDTH,
+        height=BUTTON_HEIGHT,
+        font=arial_30_bold,
+        text_color=WHITE,
+        button_color=BUTTON_BG_COLOR,
+        button_hover_color=BUTTON_HOVER_BG_COLOR,
+        border_radius=20,
+        action=action,
+    )
+    return button
+
+
+def draw_footer(screen, button=None):
+    pygame.draw.rect(
+        screen,
+        FOOTER_BG_COLOR,
+        (0, FOOTER_TOP_MARGIN, WIDTH, FOOTER_HEIGHT),
+    )
+    if button:
+        button.draw(screen)
 
 
 def draw_board(screen):
@@ -99,6 +149,80 @@ def draw_board(screen):
             LINE_WIDTH,
         )
         x += SQUARE_SIZE + LINE_WIDTH
+
+
+class Button:
+    def __init__(
+        self,
+        top,
+        left,
+        width,
+        height,
+        text,
+        font=None,
+        text_color=BLACK,
+        button_color=BUTTON_BG_COLOR,
+        button_hover_color=BUTTON_HOVER_BG_COLOR,
+        border_radius=BUTTON_BORDER_RADIUS,
+        action=None,
+    ):
+        self.rect = pygame.Rect(
+            left,
+            top,
+            width,
+            height,
+        )
+        self.text = text
+        if font:
+            self.font = font
+        else:
+            self.font = pygame.font.SysFont("arial", 30, bold=True)
+        self.text_color = text_color
+        self.button_color = button_color
+        self.button_hover_color = button_hover_color
+        self.border_radius = border_radius
+        self.action = action
+        self.color = button_color
+        self.hover_color = button_hover_color
+        self.is_hovered = False
+
+    def set_action(self, action):
+        self.action = action
+
+    def draw(self, surface):
+        current_color = self.hover_color if self.is_hovered else self.color
+        pygame.draw.rect(
+            surface, current_color, self.rect, border_radius=self.border_radius
+        )
+
+        text_surface = self.font.render(self.text, True, BLACK)
+        text_rect = text_surface.get_rect(center=self.rect.center)
+        surface.blit(text_surface, text_rect)
+
+    # return True if the hover state changes
+    def redraw(self, event):
+        is_hovered = False
+        if event.type == pygame.MOUSEMOTION:
+            is_hovered = self.rect.collidepoint(event.pos)
+            if is_hovered != self.is_hovered:
+                self.is_hovered = is_hovered
+                return True
+        elif (
+            event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+        ):  # Left mouse button
+            if self.rect.collidepoint(event.pos):
+                return True
+        return False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEMOTION:
+            self.is_hovered = self.rect.collidepoint(event.pos)
+        if (
+            event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+        ):  # Left mouse button
+            if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
 
 
 class Square:
@@ -161,6 +285,12 @@ class Board:
                 y = BOARD_TOP_MARGIN + row * (SQUARE_SIZE + LINE_WIDTH) + LINE_WIDTH
                 square = Square(x, y, SQUARE_SIZE)
                 self.squares[row][col] = square
+
+    def reset(self):
+        for row in range(3):
+            for col in range(3):
+                self.squares[row][col].marker = None
+                self.squares[row][col].highlight = False
 
 
 def handle_click(x, y, board):
@@ -232,10 +362,12 @@ def check_win(board):
 
 async def main():
 
-    screen = create_screen()
-    draw_title(screen)
-    draw_board(screen)
     board = Board()
+    screen = create_screen()
+    draw_board(screen)
+    draw_title(screen)
+    button = create_button(action=board.reset)
+    draw_footer(screen, button)
     pygame.display.flip()
     running = True
     current_marker = "X"
@@ -243,14 +375,16 @@ async def main():
     winner = None
     while running:
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+        # for event in pygame.event.get():
+        #     if event.type == pygame.QUIT:
+        #         pygame.quit()
+        #         sys.exit()
         for event in pygame.event.get():
             # Check if the user closed the window
             if event.type == pygame.QUIT:
-                running = False
+                pygame.quit()
+                sys.exit()
+                # running = False
             elif event.type == pygame.KEYDOWN:
                 if game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
@@ -269,16 +403,19 @@ async def main():
                     square.marker = current_marker
                     current_marker = "O" if current_marker == "X" else "X"
                     update = True
-        if not update:
-            await asyncio.sleep(0)  # Let other tasks run
-            continue
+                button.handle_event(event)
+        if button.redraw(event):
+            update = True
 
-        draw_board(screen)
-        winner = check_win(board)
-        draw_markers(board, screen)
-        if winner:
-            print(f"Player {winner} wins!")
-        pygame.display.flip()
+        if update:
+            draw_board(screen)
+            draw_title(screen)
+            draw_footer(screen, button)
+            winner = check_win(board)
+            draw_markers(board, screen)
+            if winner:
+                print(f"Player {winner} wins!")
+            pygame.display.flip()
         await asyncio.sleep(0)  # Let other tasks run
 
 
