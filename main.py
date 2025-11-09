@@ -202,15 +202,15 @@ class Button:
     # return True if the hover state changes
     def redraw(self, event):
         is_hovered = False
+        if (
+            event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
+        ):  # Left mouse button
+            if self.rect.collidepoint(event.pos):
+                return True
         if event.type == pygame.MOUSEMOTION:
             is_hovered = self.rect.collidepoint(event.pos)
             if is_hovered != self.is_hovered:
                 self.is_hovered = is_hovered
-                return True
-        elif (
-            event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
-        ):  # Left mouse button
-            if self.rect.collidepoint(event.pos):
                 return True
         return False
 
@@ -395,6 +395,9 @@ async def main():
         # q quits the game
         if keys[pygame.K_q]:
             running = False
+        elif button.redraw(event):
+            update = True
+            button.handle_event(event)
         elif not winner and event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Left click
                 x, y = event.pos
@@ -403,7 +406,6 @@ async def main():
                     square.marker = current_marker
                     current_marker = "O" if current_marker == "X" else "X"
                     update = True
-                button.handle_event(event)
         if button.redraw(event):
             update = True
 
