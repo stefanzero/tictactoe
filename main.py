@@ -115,42 +115,6 @@ def draw_footer(screen, button=None):
         button.draw(screen)
 
 
-def draw_board(screen):
-    screen.fill(BG_COLOR)
-    # draw a filled rectangle before the lines
-    pygame.draw.rect(
-        screen,
-        BOARD_COLOR,
-        (BOARD_LEFT_MARGIN, BOARD_TOP_MARGIN, BOARD_WIDTH, BOARD_HEIGHT),
-    )
-    x = BOARD_LEFT_MARGIN
-    y = BOARD_TOP_MARGIN + LINE_WIDTH_2
-    # draw horizontal lines
-    for row in range(BOARD_ROWS + 1):
-        pygame.draw.line(
-            screen,
-            LINE_COLOR,
-            (x, y),
-            (x + BOARD_WIDTH, y),
-            LINE_WIDTH,
-        )
-        y += SQUARE_SIZE + LINE_WIDTH
-
-    # draw vertical lines
-    # y = BOARD_TOP_MARGIN
-    x = BOARD_LEFT_MARGIN + LINE_WIDTH_2
-    y = BOARD_TOP_MARGIN
-    for col in range(BOARD_COLS + 1):
-        pygame.draw.line(
-            screen,
-            LINE_COLOR,
-            (x, y),
-            (x, y + BOARD_HEIGHT),
-            LINE_WIDTH,
-        )
-        x += SQUARE_SIZE + LINE_WIDTH
-
-
 class Button:
     def __init__(
         self,
@@ -292,6 +256,96 @@ class Board:
                 self.squares[row][col].marker = None
                 self.squares[row][col].highlight = False
 
+    def draw(self, screen):
+        screen.fill(BG_COLOR)
+        # draw a filled rectangle before the lines
+        pygame.draw.rect(
+            screen,
+            BOARD_COLOR,
+            (BOARD_LEFT_MARGIN, BOARD_TOP_MARGIN, BOARD_WIDTH, BOARD_HEIGHT),
+        )
+        x = BOARD_LEFT_MARGIN
+        y = BOARD_TOP_MARGIN + LINE_WIDTH_2
+        # draw horizontal lines
+        for row in range(BOARD_ROWS + 1):
+            pygame.draw.line(
+                screen,
+                LINE_COLOR,
+                (x, y),
+                (x + BOARD_WIDTH, y),
+                LINE_WIDTH,
+            )
+            y += SQUARE_SIZE + LINE_WIDTH
+
+        # draw vertical lines
+        # y = BOARD_TOP_MARGIN
+        x = BOARD_LEFT_MARGIN + LINE_WIDTH_2
+        y = BOARD_TOP_MARGIN
+        for col in range(BOARD_COLS + 1):
+            pygame.draw.line(
+                screen,
+                LINE_COLOR,
+                (x, y),
+                (x, y + BOARD_HEIGHT),
+                LINE_WIDTH,
+            )
+            x += SQUARE_SIZE + LINE_WIDTH
+
+        for row in range(3):
+            for col in range(3):
+                square = self.squares[row][col]
+                square.draw(screen)
+
+    def check_win(self):
+        board = self
+        for row in range(3):
+            if (
+                board.squares[row][0].marker
+                == board.squares[row][1].marker
+                == board.squares[row][2].marker
+            ):
+                if not board.squares[row][0].marker:
+                    continue
+                # add highlight to the winning row
+                for col in range(3):
+                    board.squares[row][col].highlight = True
+                return board.squares[row][0].marker
+        for col in range(3):
+            if (
+                board.squares[0][col].marker
+                == board.squares[1][col].marker
+                == board.squares[2][col].marker
+            ):
+                if not board.squares[0][col].marker:
+                    continue
+                # add highlight to the winning column
+                for row in range(3):
+                    board.squares[row][col].highlight = True
+                return board.squares[0][col].marker
+        if (
+            board.squares[0][0].marker
+            == board.squares[1][1].marker
+            == board.squares[2][2].marker
+        ):
+            if not board.squares[0][0].marker:
+                return
+            # add highlight to the diagonal
+            for row in range(3):
+                board.squares[row][row].highlight = True
+            return board.squares[0][0].marker
+        if (
+            board.squares[0][2].marker
+            == board.squares[1][1].marker
+            == board.squares[2][0].marker
+        ):
+            if not board.squares[0][2].marker:
+                return
+            # add highlight to the diagonal
+            for row in range(3):
+                board.squares[row][2 - row].highlight = True
+            return board.squares[0][2].marker
+        return None
+
 
 def handle_click(x, y, board):
     for row in range(3):
@@ -303,68 +357,11 @@ def handle_click(x, y, board):
     return None
 
 
-def draw_markers(board, screen):
-    for row in range(3):
-        for col in range(3):
-            square = board.squares[row][col]
-            square.draw(screen)
-
-
-def check_win(board):
-    for row in range(3):
-        if (
-            board.squares[row][0].marker
-            == board.squares[row][1].marker
-            == board.squares[row][2].marker
-        ):
-            if not board.squares[row][0].marker:
-                continue
-            # add highlight to the winning row
-            for col in range(3):
-                board.squares[row][col].highlight = True
-            return board.squares[row][0].marker
-    for col in range(3):
-        if (
-            board.squares[0][col].marker
-            == board.squares[1][col].marker
-            == board.squares[2][col].marker
-        ):
-            if not board.squares[0][col].marker:
-                continue
-            # add highlight to the winning column
-            for row in range(3):
-                board.squares[row][col].highlight = True
-            return board.squares[0][col].marker
-    if (
-        board.squares[0][0].marker
-        == board.squares[1][1].marker
-        == board.squares[2][2].marker
-    ):
-        if not board.squares[0][0].marker:
-            return
-        # add highlight to the diagonal
-        for row in range(3):
-            board.squares[row][row].highlight = True
-        return board.squares[0][0].marker
-    if (
-        board.squares[0][2].marker
-        == board.squares[1][1].marker
-        == board.squares[2][0].marker
-    ):
-        if not board.squares[0][2].marker:
-            return
-        # add highlight to the diagonal
-        for row in range(3):
-            board.squares[row][2 - row].highlight = True
-        return board.squares[0][2].marker
-    return None
-
-
 async def main():
 
     board = Board()
     screen = create_screen()
-    draw_board(screen)
+    board.draw(screen)
     draw_title(screen)
     button = create_button(action=board.reset)
     draw_footer(screen, button)
@@ -374,17 +371,11 @@ async def main():
     game_started = False
     winner = None
     while running:
-
-        # for event in pygame.event.get():
-        #     if event.type == pygame.QUIT:
-        #         pygame.quit()
-        #         sys.exit()
         for event in pygame.event.get():
             # Check if the user closed the window
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-                # running = False
             elif event.type == pygame.KEYDOWN:
                 if game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
@@ -408,11 +399,10 @@ async def main():
                     update = True
 
         if update:
-            draw_board(screen)
+            winner = board.check_win()
+            board.draw(screen)
             draw_title(screen)
             draw_footer(screen, button)
-            winner = check_win(board)
-            draw_markers(board, screen)
             if winner:
                 print(f"Player {winner} wins!")
             pygame.display.flip()
