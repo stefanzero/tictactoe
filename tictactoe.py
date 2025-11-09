@@ -199,8 +199,8 @@ class Button:
         text_rect = text_surface.get_rect(center=self.rect.center)
         surface.blit(text_surface, text_rect)
 
-    # return True if the hover state changes
-    def redraw(self, event):
+    # return True if the hover state changes or button was clicked
+    def update(self, event):
         is_hovered = False
         if (
             event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
@@ -395,7 +395,7 @@ async def main():
         # q quits the game
         if keys[pygame.K_q]:
             running = False
-        elif button.redraw(event):
+        elif button.update(event):
             update = True
             button.handle_event(event)
         elif not winner and event.type == pygame.MOUSEBUTTONDOWN:
@@ -406,8 +406,6 @@ async def main():
                     square.marker = current_marker
                     current_marker = "O" if current_marker == "X" else "X"
                     update = True
-        if button.redraw(event):
-            update = True
 
         if update:
             draw_board(screen)
