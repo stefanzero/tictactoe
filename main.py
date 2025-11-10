@@ -512,6 +512,22 @@ class Board:
             return True
         return False
 
+    def check_draw(self):
+        """
+        Check if the game is a draw.
+
+        This function checks if all the squares have markers
+        and returns True if there is a draw, False otherwise.
+
+        Returns:
+            bool: True if the game is a draw, False otherwise
+        """
+        for row in range(3):
+            for col in range(3):
+                if not self.squares[row][col].marker:
+                    return False
+        return not self.check_winner()
+
     def handle_click(self, x, y):
         """
         Handle a click event on the board.
@@ -587,8 +603,9 @@ async def main():
             # Check if the user pressed a key or clicked the mouse
             elif event.type == pygame.KEYDOWN or pygame.MOUSEBUTTONDOWN:
                 if not game_started:
-                    game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
-                    continue  # Skip the rest of the loop until the game has started
+                    game_started = True
+                    # Skip the rest of the loop to get next event
+                    continue
 
         update = False
         keys = pygame.key.get_pressed()
@@ -611,6 +628,8 @@ async def main():
                     # after a move, check if there is a winner
                     if board.check_winner():
                         print(f"Player {board.winner} wins!")
+                    elif board.check_draw():
+                        print("It's a draw!")
                     update = True
 
         # the update flag prevents unnecessary redraws
