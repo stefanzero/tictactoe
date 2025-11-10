@@ -601,7 +601,11 @@ async def main():
                 pygame.quit()
                 sys.exit()
             # Check if the user pressed a key or clicked the mouse
-            elif event.type == pygame.KEYDOWN or pygame.MOUSEBUTTONDOWN:
+            if (
+                event.type == pygame.KEYDOWN
+                or pygame.MOUSEBUTTONDOWN
+                or pygame.FINGERDOWN
+            ):
                 if not game_started:
                     game_started = True
                     # Skip the rest of the loop to get next event
@@ -616,10 +620,17 @@ async def main():
         if button.update(event):
             update = True
             button.handle_event(event)
-        # handle a mouse click only if the game is still in play
-        elif not board.winner and event.type == pygame.MOUSEBUTTONDOWN:
-            if event.button == 1:  # Left click
+        # handle a mouse click or touch event only if the game is still in play
+        elif not board.winner and (
+            event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN
+        ):
+            x, y = None, None
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 x, y = event.pos
+            elif event.type == pygame.FINGERDOWN:
+                x = int(event.x * screen.get_height())
+                y = int(event.y * screen.get_width())
+            if x and y:
                 square = board.handle_click(x, y)
                 # update the screen if the user clicked on an empty square
                 if square and square.marker is None:
