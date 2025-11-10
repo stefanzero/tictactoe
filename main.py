@@ -33,37 +33,47 @@ CROSS_WIDTH = 25
 SPACE = 55
 
 FOOTER_TOP_MARGIN = HEIGHT - FOOTER_HEIGHT
-# RGB
+
 RED = (255, 0, 0)
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREEN = (0, 255, 0)
-DARK_GREEN = (0, 100, 0)
 BG_COLOR = (107, 230, 224)
 BUTTON_BG_COLOR = pygame.Color(0, 0, 0)
 BUTTON_BG_COLOR.hsla = (177, 71, 50, 1)
 BUTTON_HOVER_BG_COLOR = pygame.Color(0, 0, 0)
 BUTTON_HOVER_BG_COLOR.hsla = (177, 71, 70, 1)
 BUTTON_BORDER_RADIUS = 10
-# TITLE_BG_COLOR = (162, 107, 230)
 TITLE_BG_COLOR = (95, 30, 174)
 FOOTER_BG_COLOR = TITLE_BG_COLOR
 TITLE_COLOR = WHITE
 BOARD_COLOR = (113, 125, 141)
 X_COLOR = (230, 106, 112)
 O_COLOR = (174, 230, 106)
-# BG_COLOR = (28, 170, 156)
 LINE_COLOR = (23, 145, 135)
 LINE_COLOR = BG_COLOR
 LINE_COLOR = (255, 255, 255)
 CIRCLE_COLOR = (239, 231, 200)
 CROSS_COLOR = (66, 66, 66)
 
-arial_30 = pygame.font.Font("arial.ttf", size=30)
-arial_30_bold = pygame.font.SysFont("arial", 30, bold=True)
+# arial_30 = pygame.font.Font("arial.ttf", size=30)
+TITLE_FONT_FAMILY = "arial"
+TITLE_FONT_SIZE = 50
+TITLE_FONT = pygame.font.SysFont(TITLE_FONT_FAMILY, TITLE_FONT_SIZE, bold=True)
+BUTTON_FONT_FAMILY = "arial"
+BUTTON_FONT_SIZE = 20
+BUTTON_FONT = pygame.font.SysFont(BUTTON_FONT_FAMILY, size=BUTTON_FONT_SIZE)
 
 
 def create_screen():
+    """
+    Creates the game screen.
+
+    Returns
+    -------
+    screen : pygame.Surface
+        The created game screen.
+    """
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
     pygame.display.set_caption("TIC TAC TOE")
     screen.fill(BG_COLOR)
@@ -71,15 +81,31 @@ def create_screen():
 
 
 def draw_title(screen):
-    # title_font = pygame.font.Font(None, TITLE_FONT_SIZE)
-    title_font = arial_30_bold
-    title_text = title_font.render("TIC TAC TOE", True, TITLE_COLOR)
+    """
+    Draws the title of the game on the screen.
+
+    Parameters
+    ----------
+    screen : pygame.Surface
+        The screen to draw the title on.
+
+    """
+    title_text = TITLE_FONT.render("TIC TAC TOE", True, TITLE_COLOR)
     title_rect = title_text.get_rect(center=(TITLE_WIDTH // 2, TITLE_HEIGHT // 2))
     pygame.draw.rect(screen, TITLE_BG_COLOR, (0, 0, TITLE_WIDTH, TITLE_HEIGHT))
     screen.blit(title_text, title_rect)
 
 
 def create_button(action=None):
+    """
+    Creates a button with the specified action.
+
+    Args:
+        action (function): The function to be called when the button is clicked.
+
+    Returns:
+        Button: The created button.
+    """
     left = (WIDTH - BUTTON_WIDTH) // 2
     top = FOOTER_TOP_MARGIN + (FOOTER_HEIGHT - BUTTON_HEIGHT) // 2
     button = Button(
@@ -88,7 +114,7 @@ def create_button(action=None):
         top=top,
         width=BUTTON_WIDTH,
         height=BUTTON_HEIGHT,
-        font=arial_30_bold,
+        font=BUTTON_FONT,
         text_color=WHITE,
         button_color=BUTTON_BG_COLOR,
         button_hover_color=BUTTON_HOVER_BG_COLOR,
@@ -99,6 +125,20 @@ def create_button(action=None):
 
 
 def draw_footer(screen, button=None):
+    """
+    Draw the footer of the game window.
+
+    The footer is drawn with a background color of FOOTER_BG_COLOR
+    and a height of FOOTER_HEIGHT. If a button is provided, it is
+    drawn on top of the footer.
+
+    Parameters
+    ----------
+    screen : pygame.Surface
+        The surface to draw the footer on
+    button : Button, optional
+        The button to draw on top of the footer
+    """
     pygame.draw.rect(
         screen,
         FOOTER_BG_COLOR,
@@ -123,6 +163,22 @@ class Button:
         border_radius=BUTTON_BORDER_RADIUS,
         action=None,
     ):
+        """
+        Initialize a Button object.
+
+        Parameters:
+        top (int): y-coordinate of the button
+        left (int): x-coordinate of the button
+        width (int): width of the button
+        height (int): height of the button
+        text (str): text of the button
+        font (pygame.font.Font): font of the button, defaults to Arial 30
+        text_color (tuple): color of the button text, defaults to BLACK
+        button_color (tuple): color of the button, defaults to BUTTON_BG_COLOR
+        button_hover_color (tuple): color of the button when hovered, defaults to BUTTON_HOVER_BG_COLOR
+        border_radius (int): border radius of the button, defaults to BUTTON_BORDER_RADIUS
+        action (function): action to take when the button is clicked, defaults to None
+        """
         self.rect = pygame.Rect(
             left,
             top,
@@ -144,9 +200,30 @@ class Button:
         self.is_hovered = False
 
     def set_action(self, action):
+        """
+        Sets the action to be performed when the button is clicked.
+
+        Parameters
+        ----------
+        action : callable
+            The action to be performed when the button is clicked.
+        """
         self.action = action
 
     def draw(self, surface):
+        """
+        Draws the button on the given surface.
+
+        Parameters
+        ----------
+        surface : pygame.Surface
+            The surface to draw the button on.
+
+        Returns
+        -------
+        bool
+            True if the hover state changed or the button was clicked.
+        """
         current_color = self.hover_color if self.is_hovered else self.color
         pygame.draw.rect(
             surface, current_color, self.rect, border_radius=self.border_radius
@@ -158,6 +235,20 @@ class Button:
 
     # return True if the hover state changes or button was clicked
     def update(self, event):
+        """
+        Update the button state based on the given event.
+
+        If the event is a MOUSEBUTTONDOWN event with the left mouse button,
+        return True if the button was clicked.
+        If the event is a MOUSEMOTION event, return True if the hover state
+        of the button changed.
+
+        Parameters:
+            event (pygame.event.Event): the event to be handled
+
+        Returns:
+            bool: whether the button state changed
+        """
         is_hovered = False
         if (
             event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
@@ -172,6 +263,15 @@ class Button:
         return False
 
     def handle_event(self, event):
+        """
+        Handle events related to the button.
+
+        Parameters:
+            event (pygame.event.Event): the event to be handled
+
+        If the event is a MOUSEMOTION event, update the hover state of the button.
+        If the event is a MOUSEBUTTONDOWN event with the left mouse button, and the button is hovered, call the action of the button.
+        """
         if event.type == pygame.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
         if (
@@ -184,6 +284,23 @@ class Button:
 
 class Square:
     def __init__(self, x, y, size):
+        """
+        Initialize a Square object.
+
+        Parameters:
+            x (int): the x coordinate of the top left corner of the square
+            y (int): the y coordinate of the top left corner of the square
+            size (int): the size of the square
+
+        Attributes:
+            x (int): the x coordinate of the top left corner of the square
+            y (int): the y coordinate of the top left corner of the square
+            xy1 (tuple): the coordinates of the top left corner of the square
+            xy2 (tuple): the coordinates of the bottom right corner of the square
+            size (int): the size of the square
+            marker (str): the marker of the square, can be None, "X", or "O"
+            highlight (bool): whether the square is highlighted
+        """
         self.x = x
         self.y = y
         self.xy1 = (x, y)
@@ -195,6 +312,16 @@ class Square:
         self.highlight = False
 
     def point_in_square(self, x, y):
+        """
+        Check if a point is inside the square.
+
+        Parameters:
+            x (int): the x coordinate of the point
+            y (int): the y coordinate of the point
+
+        Returns:
+            bool: True if the point is inside the square, False otherwise
+        """
         return (
             x > self.x
             and x < self.x + self.size
@@ -203,6 +330,16 @@ class Square:
         )
 
     def draw(self, screen):
+        """
+        Draw a square on the given screen.
+
+        If the square has a marker, it will be drawn in the correct color.
+        If the square is highlighted, it will be drawn in the background color.
+        Otherwise, it will be drawn in black.
+
+        Parameters:
+            screen (pygame.Surface): The screen to draw on.
+        """
         if not self.marker:
             return
 
@@ -234,6 +371,15 @@ class Square:
 
 class Board:
     def __init__(self):
+        """
+        Initialize a Board object.
+
+        This function initializes a Board object by creating a 2D list of Square objects
+        and storing them in the Board object's `squares` attribute.
+
+        The Board object represents a Tic Tac Toe game board.
+        """
+        self.winner = None
         self.squares = [[None] * 3 for _ in range(3)]
         # create Square objects and store them in the 2D list
         for row in range(3):
@@ -244,12 +390,28 @@ class Board:
                 self.squares[row][col] = square
 
     def reset(self):
+        """
+        Reset the board by setting the marker and highlight of each square
+        to None and False respectively.
+        """
+        self.winner = None
         for row in range(3):
             for col in range(3):
                 self.squares[row][col].marker = None
                 self.squares[row][col].highlight = False
 
     def draw(self, screen):
+        """
+        Draw the board on the screen.
+
+        This function fills the screen with the background color,
+        draws a filled rectangle for the board, draws horizontal and
+        vertical lines for the grid, and draws the markers for each
+        square in the grid.
+
+        Parameters:
+            screen (pygame.Surface): the surface to draw on
+        """
         screen.fill(BG_COLOR)
         # draw a filled rectangle before the lines
         pygame.draw.rect(
@@ -271,7 +433,6 @@ class Board:
             y += SQUARE_SIZE + LINE_WIDTH
 
         # draw vertical lines
-        # y = BOARD_TOP_MARGIN
         x = BOARD_LEFT_MARGIN + LINE_WIDTH_2
         y = BOARD_TOP_MARGIN
         for col in range(BOARD_COLS + 1):
@@ -291,119 +452,178 @@ class Board:
                 square.draw(screen)
 
     def check_winner(self):
+        """
+        Check if there is a winner in the game.
+
+        This function checks if there is a winner in the game by
+        checking rows, columns, and diagonals. If there is a winner,
+        it highlights the winning row, column, or diagonal and
+        sets the winner attribute to the winner's marker.
+
+        Returns:
+            bool: True if there is a winner, False otherwise
+        """
         board = self
         for row in range(3):
-            if (
+            if board.squares[row][0].marker and (
                 board.squares[row][0].marker
                 == board.squares[row][1].marker
                 == board.squares[row][2].marker
             ):
-                if not board.squares[row][0].marker:
-                    continue
                 # add highlight to the winning row
                 for col in range(3):
                     board.squares[row][col].highlight = True
-                return board.squares[row][0].marker
+                self.winner = board.squares[row][0].marker
+                return True
         for col in range(3):
-            if (
+            if board.squares[0][col].marker and (
                 board.squares[0][col].marker
                 == board.squares[1][col].marker
                 == board.squares[2][col].marker
             ):
-                if not board.squares[0][col].marker:
-                    continue
                 # add highlight to the winning column
                 for row in range(3):
                     board.squares[row][col].highlight = True
-                return board.squares[0][col].marker
+                self.winner = board.squares[0][col].marker
+                return True
+        # if the center square is not filled, there can be
+        # no diagonal winner
+        if not board.squares[1][1].marker:
+            return False
         if (
             board.squares[0][0].marker
             == board.squares[1][1].marker
             == board.squares[2][2].marker
         ):
-            if not board.squares[0][0].marker:
-                return
             # add highlight to the diagonal
             for row in range(3):
                 board.squares[row][row].highlight = True
-            return board.squares[0][0].marker
+            self.winner = board.squares[0][0].marker
+            return True
         if (
             board.squares[0][2].marker
             == board.squares[1][1].marker
             == board.squares[2][0].marker
         ):
-            if not board.squares[0][2].marker:
-                return
             # add highlight to the diagonal
             for row in range(3):
                 board.squares[row][2 - row].highlight = True
-            return board.squares[0][2].marker
+            self.winner = board.squares[0][2].marker
+            return True
+        return False
+
+    def handle_click(self, x, y):
+        """
+        Handle a click event on the board.
+
+        Iterate through the rows and columns of the board,
+        checking if the click is inside any of the squares. If
+        a square is found, return the square object.
+
+        If no square is found, return None.
+        """
+        board = self
+        for row in range(3):
+            for col in range(3):
+                square = board.squares[row][col]
+                if square.point_in_square(x, y):
+                    # return row, col
+                    return square
         return None
 
 
-def handle_click(x, y, board):
-    for row in range(3):
-        for col in range(3):
-            square = board.squares[row][col]
-            if square.point_in_square(x, y):
-                # return row, col
-                return square
-    return None
+def is_running_in_browser():
+    """
+    Check if the script is running in a browser environment.
+
+    This function checks if the 'pyodide' module is available
+    (used by PyScript) or if the 'js' module is available
+    (used by PyScript or other JavaScript bindings).
+
+    Returns:
+        bool: True if running in a browser environment, False otherwise
+    """
+    if "pyodide" in sys.modules:
+        return True
+    try:
+        import js  # Access JavaScript globals if available
+
+        return True
+    except ImportError:
+        pass
+    return False
 
 
 async def main():
+    """
+    Main game loop.
 
+    Initializes the game board, screen, and buttons. Then,
+    enters a loop where it processes events, updates the game
+    state, and redraws the screen.
+
+    Exits the loop when the user closes the window or presses the
+    'q' key when not running in a browser.
+    """
+    browser = is_running_in_browser()
     board = Board()
     screen = create_screen()
     board.draw(screen)
     draw_title(screen)
     button = create_button(action=board.reset)
     draw_footer(screen, button)
+    # refresh the screen
     pygame.display.flip()
     running = True
     current_marker = "X"
     game_started = False
-    winner = None
+    update = False
     while running:
         for event in pygame.event.get():
             # Check if the user closed the window
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-            elif event.type == pygame.KEYDOWN:
-                if game_started:
+            # Check if the user pressed a key or clicked the mouse
+            elif event.type == pygame.KEYDOWN or pygame.MOUSEBUTTONDOWN:
+                if not game_started:
                     game_started = True  # Set the flag to True to avoid calling start_screen repeatedly
                     continue  # Skip the rest of the loop until the game has started
 
         update = False
         keys = pygame.key.get_pressed()
-        # q quits the game
-        if keys[pygame.K_q]:
+        # q quits the game if not running in a browser
+        if keys[pygame.K_q] and not browser:
             running = False
-        elif button.update(event):
+        # update the screen if the button is clicked or hovered
+        if button.update(event):
             update = True
             button.handle_event(event)
-        elif not winner and event.type == pygame.MOUSEBUTTONDOWN:
+        # handle a mouse click only if the game is still in play
+        elif not board.winner and event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1:  # Left click
                 x, y = event.pos
-                square = handle_click(x, y, board)
+                square = board.handle_click(x, y)
+                # update the screen if the user clicked on an empty square
                 if square and square.marker is None:
                     square.marker = current_marker
                     current_marker = "O" if current_marker == "X" else "X"
+                    # after a move, check if there is a winner
+                    if board.check_winner():
+                        print(f"Player {board.winner} wins!")
                     update = True
 
+        # the update flag prevents unnecessary redraws
         if update:
-            winner = board.check_winner()
+            update = False
             board.draw(screen)
             draw_title(screen)
             draw_footer(screen, button)
-            if winner:
-                print(f"Player {winner} wins!")
             pygame.display.flip()
-        await asyncio.sleep(0)  # Let other tasks run
+
+        # Let other tasks run
+        await asyncio.sleep(0)
 
 
 # This is the program entry point
 asyncio.run(main())
-# if __name__ == "__main__":
-#     run()
