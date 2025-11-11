@@ -603,8 +603,8 @@ async def main():
             # Check if the user pressed a key or clicked the mouse
             if (
                 event.type == pygame.KEYDOWN
-                or pygame.MOUSEBUTTONDOWN
-                or pygame.FINGERDOWN
+                or event.type == pygame.MOUSEBUTTONDOWN
+                or event.type == pygame.FINGERDOWN
             ):
                 if not game_started:
                     game_started = True
