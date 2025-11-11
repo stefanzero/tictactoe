@@ -234,7 +234,7 @@ class Button:
         surface.blit(text_surface, text_rect)
 
     # return True if the hover state changes or button was clicked
-    def update(self, event):
+    def update(self, event, screen):
         """
         Update the button state based on the given event.
 
@@ -255,14 +255,19 @@ class Button:
         ):  # Left mouse button
             if self.rect.collidepoint(event.pos):
                 return True
-        if event.type == pygame.MOUSEMOTION:
+        elif event.type == pygame.MOUSEMOTION:
             is_hovered = self.rect.collidepoint(event.pos)
             if is_hovered != self.is_hovered:
                 self.is_hovered = is_hovered
                 return True
+        elif event.type == pygame.FINGERDOWN:
+            x = int(event.x * screen.get_height())
+            y = int(event.y * screen.get_width())
+            if self.rect.collidepoint(x, y):
+                return True
         return False
 
-    def handle_event(self, event):
+    def handle_event(self, event, screen):
         """
         Handle events related to the button.
 
@@ -274,10 +279,16 @@ class Button:
         """
         if event.type == pygame.MOUSEMOTION:
             self.is_hovered = self.rect.collidepoint(event.pos)
-        if (
+        elif (
             event.type == pygame.MOUSEBUTTONDOWN and event.button == 1
         ):  # Left mouse button
             if self.rect.collidepoint(event.pos):
+                if self.action:
+                    self.action()
+        elif event.type == pygame.FINGERDOWN:
+            x = int(event.x * screen.get_height())
+            y = int(event.y * screen.get_width())
+            if self.rect.collidepoint(x, y):
                 if self.action:
                     self.action()
 
@@ -617,9 +628,9 @@ async def main():
         if keys[pygame.K_q] and not browser:
             running = False
         # update the screen if the button is clicked or hovered
-        if button.update(event):
+        if button.update(event, screen):
             update = True
-            button.handle_event(event)
+            button.handle_event(event, screen)
         # handle a mouse click or touch event only if the game is still in play
         elif not board.winner and (
             event.type == pygame.MOUSEBUTTONDOWN or event.type == pygame.FINGERDOWN
